@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hodnocení lekce - FITKO</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; background: #f5f5f5; padding: 20px; }
+        .header { background: #2d2d2d; color: white; padding: 15px 30px; border-radius: 8px 8px 0 0; }
+        .container { max-width: 1000px; margin: 0 auto; background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .section { padding: 30px; border-bottom: 1px solid #e0e0e0; }
+        .section:last-child { border-bottom: none; }
+        .section-title { font-size: 20px; font-weight: 600; margin-bottom: 20px; }
+        .lesson-card { background: #f9f9f9; padding: 15px; border-radius: 6px; margin-bottom: 15px; }
+        .lesson-info { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .lesson-title { font-weight: 600; font-size: 16px; }
+        .lesson-date { color: #666; font-size: 14px; }
+        .rating-stars { display: flex; gap: 5px; margin: 10px 0; }
+        .star { font-size: 24px; cursor: pointer; color: #ddd; transition: color 0.2s; }
+        .star.active { color: #ffc107; }
+        .star:hover { color: #ffc107; }
+        textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-family: inherit; min-height: 80px; resize: vertical; }
+        .btn { background: #000; color: white; border: none; padding: 10px 24px; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 14px; }
+        .btn:hover { background: #333; }
+        .btn:disabled { background: #ccc; cursor: not-allowed; }
+        .message { margin: 20px 0; padding: 12px; border-radius: 4px; display: none; }
+        .message.success { background: #e8f5e9; color: #2e7d32; border: 1px solid #a5d6a7; }
+        .message.error { background: #ffebee; color: #c62828; border: 1px solid #ef9a9a; }
+        .loading { text-align: center; padding: 40px; color: #666; }
+        .no-reservations { text-align: center; padding: 40px; color: #999; }
+        .rated { opacity: 0.6; pointer-events: none; }
+        .rated-badge { background: #4caf50; color: white; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>Hodnocení lekcí</h1>
+    </div>
+
+    <div class="section">
+        <h2 class="section-title">Vaše dokončené lekce</h2>
+        <div id="message" class="message"></div>
+        <div id="loading" class="loading" style="display:none;">Načítání...</div>
+        <div id="reservationsList"></div>
+    </div>
+</div>
+
+<script>
+    const API_URL = 'http://localhost:8081/api';
+    const CUSTOMER_ID = 1;
+
+    let reservations = [];
+
+    async function loadReservations() {
+        document.getElementById('loading').style.display = 'block';
+        try {
+            const res = await fetch(`${API_URL}/reservations?customerId=${CUSTOMER_ID}`);
+            reservations = await res.json();
+            renderReservations();
+        } catch (e) {
+            console.error('Failed to load reservations:', e);
+            showMessage('Nepodařilo se načíst rezervace', 'error');
+        } finally {
+            document.getElementById('loading').style.display = 'none';
+        }
+    }
+
+    function renderReservations() {
+        const container = document.getElementById('reservationsList');
+
+        if (reservations.length === 0) {
+            container.innerHTML = '<div class="no-reservations">Nemáte žádné dokončené lekce k hodnocení</div>';
+            return;
+        }
+
+        container.innerHTML = reservations.map((res, index) => {
+            const isRated = res.rating !== null;
+            return `
+                <div class="lesson-card ${isRated ? 'rated' : ''}">
+                    <div class="lesson-info">
+                        <div>
+                            <div class="lesson-title">${res.lessonTitle}</div>
+                            <div class="lesson-date">Trenér: ${res.trainer} | Datum: ${res.datum}</div>
+                        </div>
+                        ${isRated ? `<span class="rated-badge">Ohodnoceno: ${res.rating}★</span>` : ''}
+                    </div>
+
+                    ${!isRated ? `
+                        <div class="rating-stars" id="stars-${index}">
+                            ${[1,2,3,4,5].map(star =>
+                `<span class="star" data-index="${index}" data-rating="${star}" onclick="selectRating(${index}, ${star})">★</span>`
+            ).join('')}
+                        </div>
+                        <textarea id="review-${index}" placeholder="Napište svou recenzi... (nepovinné)"></textarea>
+                        <br><br>
+                        <button class="btn" onclick="submitRating(${res.id}, ${index})">Odeslat hodnocení</button>
+                    ` : `
+                        <div style="margin-top: 10px; color: #666;">
+                            ${res.review ? `<p><strong>Vaše recenze:</strong> ${res.review}</p>` : ''}
+                        </div>
+                    `}
+                </div>
+            `;
+        }).join('');
+    }
+
+    let selectedRatings = {};
+
+    function selectRating(index, rating) {
+        selectedRatings[index] = rating;
+        const stars = document.querySelectorAll(`#stars-${index} .star`);
+        stars.forEach((star, i) => {
+            if (i < rating) {
+                star.classList.add('active');
+            } else {
+                star.classList.remove('active');
+            }
+        });
+    }
+
+    async function submitRating(reservationId, index) {
+        const rating = selectedRatings[index];
+        if (!rating) {
+            showMessage('Prosím vyberte hodnocení (hvězdičky)', 'error');
+            return;
+        }
+
+        const review = document.getElementById(`review-${index}`).value;
+
+        try {
+            const res = await fetch(`${API_URL}/reservations/rate`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    reservationId: reservationId,
+                    rating: rating,
+                    review: review
+                })
+            });
+
+            const data = await res.json();
+
+            if (data.success) {
+                showMessage('Hodnocení bylo uloženo!', 'success');
+                await loadReservations();
+            } else {
+                showMessage(data.error || 'Chyba při ukládání hodnocení', 'error');
+            }
+        } catch (e) {
+            console.error('Failed to submit rating:', e);
+            showMessage('Chyba při ukládání hodnocení', 'error');
+        }
+    }
+
+    function showMessage(text, type) {
+        const msg = document.getElementById('message');
+        msg.textContent = text;
+        msg.className = `message ${type}`;
+        msg.style.display = 'block';
+        setTimeout(() => msg.style.display = 'none', 5000);
+    }
+
+    loadReservations();
+</script>
+</body>
+</html>
