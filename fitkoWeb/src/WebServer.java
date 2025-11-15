@@ -16,11 +16,11 @@ import java.util.*;
 public class WebServer {
 
     public static void main(String[] args) throws Exception {
-        DB.initSchema();
 
         if (isDatabaseEmpty()) {
             DB.seed();
         }
+
         HttpServer server = HttpServer.create(new InetSocketAddress(8081), 0);
 
         // API endpoints
@@ -38,17 +38,15 @@ public class WebServer {
         System.out.println("║       FITKO Web Server - RUNNING                    ║");
         System.out.println("╚═══════════════════════════════════════════════════════╝");
         System.out.println();
-        System.out.println("🌐 Open in browser:");
+        System.out.println("   Open in browser:");
         System.out.println("   http://localhost:8081/web/rezervace_lekce.html");
         System.out.println("   http://localhost:8081/web/hodnoceni_lekce.html");
-        System.out.println();
-        System.out.println("📡 API available at: http://localhost:8081/api/");
         System.out.println();
         System.out.println("Press Ctrl+C to stop...");
     }
 
-    //HANDLERS
 
+    //HANDLERS
     static class LessonsHandler implements HttpHandler {
         @Override
         public void handle(HttpExchange ex) throws IOException {
@@ -318,7 +316,6 @@ public class WebServer {
     }
 
     // Helpers
-
     static void setCORS(HttpExchange ex) {
         ex.getResponseHeaders().set("Access-Control-Allow-Origin", "*");
         ex.getResponseHeaders().set("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
