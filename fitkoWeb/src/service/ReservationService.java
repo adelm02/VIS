@@ -45,7 +45,7 @@ public class ReservationService {
         }
     }
 
-    // Strategy - nastavit strategii (VOLITELNÉ)
+    // Strategy - nastavit strategii
     public void setPricingStrategy(IPricingStrategy strategy) {
         this.pricingStrategy = strategy;
     }
@@ -53,7 +53,7 @@ public class ReservationService {
     public void createReservation(Zakaznik zakaznik, Lekce lekce, String datum) throws SQLException {
         if (zakaznik == null) zakaznik = NeznamyZakaznik.instance();
 
-        // Strategy pattern - pokud není nastavena strategie, použij základní cenu
+        // Strategy pattern - pokud nenastavena strategie da se default price
         int finalPrice;
         if (pricingStrategy != null) {
             finalPrice = pricingStrategy.calculatePrice(lekce.price.getAmountCzk(), zakaznik);
@@ -118,7 +118,6 @@ public class ReservationService {
         System.out.println("Reservation cancelled: " + id);
     }
 
-    // Zbytek metod zůstává stejný...
     public void addRating(int reservationId, int rating, String review) throws SQLException {
         if (rating < 1 || rating > 5) {
             System.out.println("Rating must be 1..5 stars.");

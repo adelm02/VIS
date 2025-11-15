@@ -13,7 +13,6 @@ public class DB {
         return c;
     }
 
-    // zavolej při startu
     public static void initSchema() throws SQLException {
         try (Connection c = get(); Statement s = c.createStatement()) {
 
@@ -84,7 +83,7 @@ public class DB {
                 );
             """);
 
-            // --- Lightweight migrace pro staré DB soubory ---
+            // Lightweight migrace pro staré DB soubory
             if (!columnExists(c, "Reservation", "rating")) {
                 s.execute("ALTER TABLE Reservation ADD COLUMN rating INTEGER");
             }
@@ -104,7 +103,7 @@ public class DB {
         }
     }
 
-    // pro čistý start v demo/scénářích
+    //pomocná delete funkce
     public static void clearAll() throws SQLException {
         try (Connection c = get(); Statement s = c.createStatement()) {
             s.executeUpdate("DELETE FROM Reservation");
@@ -116,10 +115,9 @@ public class DB {
         }
     }
 
-    // vloží základní data podle zadání artefaktu
     public static void seed() throws SQLException {
         try (Connection c = get()) {
-            // Zakaznici - zatím ponecháváme 2
+            // Zakaznici
             try (PreparedStatement ps = c.prepareStatement(
                     "INSERT INTO Zakaznik(id,name,email,password,credit) VALUES(?,?,?,?,?)")) {
                 ps.setInt(1, 1); ps.setString(2, "Anna Nováková"); ps.setString(3, "anna@fit.cz");
@@ -213,12 +211,11 @@ public class DB {
                 ps.executeUpdate();
             }
 
-            // LEKCE - 5 STÁLÝCH TYPŮ, všech 10 trenérů má alespoň jednu lekci
+            //Lekce
             try (PreparedStatement ps = c.prepareStatement(
                     "INSERT INTO Lekce(id,title,trainer,day,time,capacity,loggedIn,price) VALUES(?,?,?,?,?,?,?,?)")) {
 
-                // === TYP 1: CROSSFIT ===
-                // Petr Novák - Crossfit (2 termíny)
+                // TYP 1: CROSSFIT
                 ps.setInt(1, 1); ps.setString(2, "Crossfit"); ps.setString(3, "Petr Novák");
                 ps.setString(4, "Monday"); ps.setString(5, "10:00");
                 ps.setInt(6, 10); ps.setInt(7, 0); ps.setInt(8, 150); ps.executeUpdate();
@@ -227,13 +224,11 @@ public class DB {
                 ps.setString(4, "Wednesday"); ps.setString(5, "10:00");
                 ps.setInt(6, 10); ps.setInt(7, 0); ps.setInt(8, 150); ps.executeUpdate();
 
-                // Kateřina Nová - Crossfit (1 termín)
                 ps.setInt(1, 8); ps.setString(2, "Crossfit"); ps.setString(3, "Kateřina Nová");
                 ps.setString(4, "Friday"); ps.setString(5, "11:00");
                 ps.setInt(6, 12); ps.setInt(7, 0); ps.setInt(8, 150); ps.executeUpdate();
 
-                // === TYP 2: PILATES ===
-                // Jana Dvořáková - Pilates (2 termíny)
+                //TYP 2: PILATES
                 ps.setInt(1, 3); ps.setString(2, "Pilates"); ps.setString(3, "Jana Dvořáková");
                 ps.setString(4, "Tuesday"); ps.setString(5, "09:00");
                 ps.setInt(6, 15); ps.setInt(7, 0); ps.setInt(8, 120); ps.executeUpdate();
@@ -242,24 +237,20 @@ public class DB {
                 ps.setString(4, "Thursday"); ps.setString(5, "20:00");
                 ps.setInt(6, 15); ps.setInt(7, 0); ps.setInt(8, 120); ps.executeUpdate();
 
-                // Simona Růžová - Pilates (1 termín)
                 ps.setInt(1, 9); ps.setString(2, "Pilates"); ps.setString(3, "Simona Růžová");
                 ps.setString(4, "Saturday"); ps.setString(5, "10:00");
                 ps.setInt(6, 15); ps.setInt(7, 0); ps.setInt(8, 120); ps.executeUpdate();
 
-                // === TYP 3: KRUHOVÝ TRÉNINK ===
-                // Tomáš Král - Kruhový trénink (1 termín)
+                // TYP 3: KRUHOVÝ TRÉNINK
                 ps.setInt(1, 5); ps.setString(2, "Kruhový trénink"); ps.setString(3, "Tomáš Král");
                 ps.setString(4, "Wednesday"); ps.setString(5, "18:00");
                 ps.setInt(6, 12); ps.setInt(7, 0); ps.setInt(8, 100); ps.executeUpdate();
 
-                // David Procházka - Kruhový trénink (1 termín)
                 ps.setInt(1, 10); ps.setString(2, "Kruhový trénink"); ps.setString(3, "David Procházka");
                 ps.setString(4, "Monday"); ps.setString(5, "19:00");
                 ps.setInt(6, 12); ps.setInt(7, 0); ps.setInt(8, 100); ps.executeUpdate();
 
-                // === TYP 4: JÓGA ===
-                // Lucie Benešová - Jóga (2 termíny)
+                // TYP 4: JÓGA
                 ps.setInt(1, 6); ps.setString(2, "Jóga"); ps.setString(3, "Lucie Benešová");
                 ps.setString(4, "Thursday"); ps.setString(5, "07:00");
                 ps.setInt(6, 20); ps.setInt(7, 0); ps.setInt(8, 80); ps.executeUpdate();
@@ -268,18 +259,16 @@ public class DB {
                 ps.setString(4, "Sunday"); ps.setString(5, "08:00");
                 ps.setInt(6, 20); ps.setInt(7, 0); ps.setInt(8, 80); ps.executeUpdate();
 
-                // Markéta Zelená - Jóga (1 termín)
                 ps.setInt(1, 12); ps.setString(2, "Jóga"); ps.setString(3, "Markéta Zelená");
                 ps.setString(4, "Tuesday"); ps.setString(5, "18:30");
                 ps.setInt(6, 18); ps.setInt(7, 0); ps.setInt(8, 80); ps.executeUpdate();
 
-                // === TYP 5: KICKBOX ===
-                // Martin Svoboda - Kickbox (1 termín)
+                // TYP 5: KICKBOX
                 ps.setInt(1, 7); ps.setString(2, "Kickbox"); ps.setString(3, "Martin Svoboda");
                 ps.setString(4, "Friday"); ps.setString(5, "19:00");
                 ps.setInt(6, 8); ps.setInt(7, 0); ps.setInt(8, 180); ps.executeUpdate();
 
-                // Jakub Bílý - Kickbox (1 termín)
+
                 ps.setInt(1, 13); ps.setString(2, "Kickbox"); ps.setString(3, "Jakub Bílý");
                 ps.setString(4, "Tuesday"); ps.setString(5, "20:00");
                 ps.setInt(6, 10); ps.setInt(7, 0); ps.setInt(8, 180); ps.executeUpdate();

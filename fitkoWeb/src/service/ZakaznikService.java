@@ -10,7 +10,7 @@ import domain.Zakaznik;
 public class ZakaznikService {
     private ZakaznikGateway gateway = new ZakaznikGateway();
 
-    // vytvoření zákazníka
+
     public void CreateCust(int id, String name, String email, String password, int credit) throws Exception {
         ZakaznikDto z = new ZakaznikDto();
         z.id = id;
@@ -28,7 +28,6 @@ public class ZakaznikService {
         System.out.println("Zákazník uložen: " + name);
     }
 
-    // načti všechny zákazníky
     public void vypisVsechny() throws Exception {
         for (ZakaznikDto z : gateway.findAll()) {
             System.out.println(z.id + " - " + z.name + " (" + z.credit + ")");

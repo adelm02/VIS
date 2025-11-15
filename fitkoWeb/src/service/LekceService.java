@@ -9,7 +9,6 @@ import domain.Lekce;
 
 
 public class LekceService {
-
     // Save all lessons to CSV
     public void saveAllToFile(LekceTableModule table) throws Exception {
         LekceGateway gateway = new LekceGateway();

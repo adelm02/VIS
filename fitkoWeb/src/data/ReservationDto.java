@@ -7,7 +7,6 @@ public class ReservationDto {
     public String datum;
     public String stav;
 
-
     public Integer rating;
     public String review;
 }

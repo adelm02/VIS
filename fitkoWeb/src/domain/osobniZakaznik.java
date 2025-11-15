@@ -23,11 +23,11 @@ public class osobniZakaznik extends Zakaznik {
         this.datumNarozeni = datumNarozeni;
     }
 
-    // Lazy load metoda pro rezervace
-    public List<ReservationDto> getRezervace() throws SQLException {  // ← bylo List<Reservation>
+    // Lazy load
+    public List<ReservationDto> getRezervace() throws SQLException {
         if (!rezervaceNactene) {
             ReservationGateway gw = new ReservationGateway();
-            rezervace = gw.findByZakaznikId(this.id); // vrací List<ReservationDto>
+            rezervace = gw.findByZakaznikId(this.id);
             rezervaceNactene = true;
         }
         return rezervace;

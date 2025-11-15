@@ -6,7 +6,6 @@ import java.util.List;
 
 public class ReportGateway {
 
-    // 1) Počet rezervací podle lekcí (včetně lekcí bez rezervací)
     public List<LessonCountRow> reservationsPerLesson() throws SQLException {
         String sql = """
             SELECT l.id        AS lekceId,
@@ -24,15 +23,14 @@ public class ReportGateway {
             while (rs.next()) {
                 LessonCountRow row = new LessonCountRow();
                 row.lekceId = rs.getInt("lekceId");
-                row.title   = rs.getString("title");
-                row.count   = rs.getInt("cnt");
+                row.title = rs.getString("title");
+                row.count = rs.getInt("cnt");
                 out.add(row);
             }
         }
         return out;
     }
 
-    // 2) Průměrné hodnocení lekcí (jen kde již existuje rating)
     public List<LessonRatingRow> avgRatingPerLesson() throws SQLException {
         String sql = """
             SELECT l.id                         AS lekceId,
@@ -51,17 +49,17 @@ public class ReportGateway {
              ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 LessonRatingRow row = new LessonRatingRow();
-                row.lekceId   = rs.getInt("lekceId");
-                row.title     = rs.getString("title");
+                row.lekceId = rs.getInt("lekceId");
+                row.title = rs.getString("title");
                 row.avgRating = rs.getDouble("avg_rating");
-                row.count     = rs.getInt("n");
+                row.count = rs.getInt("n");
                 out.add(row);
             }
         }
         return out;
     }
 
-    // 3) Historie rezervací konkrétního zákazníka (JOIN na lekci)
+    // 3) history of leesons
     public List<CustomerReservationRow> reservationsForCustomer(int customerId) throws SQLException {
         String sql = """
             SELECT r.id     AS resId,
@@ -83,12 +81,12 @@ public class ReportGateway {
                 while (rs.next()) {
                     CustomerReservationRow row = new CustomerReservationRow();
                     row.reservationId = rs.getInt("resId");
-                    row.title         = rs.getString("title");
-                    row.datum         = rs.getString("datum");
-                    row.stav          = rs.getString("stav");
+                    row.title = rs.getString("title");
+                    row.datum = rs.getString("datum");
+                    row.stav = rs.getString("stav");
                     int r = rs.getInt("rating");
-                    row.rating        = rs.wasNull() ? null : r;
-                    row.review        = rs.getString("review");
+                    row.rating = rs.wasNull() ? null : r;
+                    row.review = rs.getString("review");
                     out.add(row);
                 }
             }
@@ -96,7 +94,7 @@ public class ReportGateway {
         return out;
     }
 
-    // --- DTOčka pro pohodlný návrat výsledků ---
+    //DTO for return
     public static class LessonCountRow {
         public int lekceId;
         public String title;
@@ -113,7 +111,7 @@ public class ReportGateway {
         public String title;
         public String datum;
         public String stav;
-        public Integer rating;  // může být NULL
-        public String review;   // může být NULL
+        public Integer rating;
+        public String review;
     }
 }

@@ -9,7 +9,6 @@ public class Reservation extends BaseEntity {
     public String datum;
     public ReservationStatus stav;
 
-    // NEW
     public Integer rating;   // 1..5
     public String review;
 
@@ -26,19 +25,10 @@ public class Reservation extends BaseEntity {
     public void abort()   { this.stav = ReservationStatus.ZRUSENA; markUpdated(); }
     public void finale()  { this.stav = ReservationStatus.DOKONCENA; markUpdated(); }
 
-    // NEW
     public void rate(int rating, String review) {
         this.rating = rating;
         this.review = review;
         this.stav   = ReservationStatus.DOKONCENA;
         markUpdated();
     }
-
-    public void printInfo() {
-        System.out.println("Reservation " + id + ": " + zakaznik.name + " -> " + lekce.title +
-                " (" + datum + ") - Status: " + stav +
-                (rating != null ? " | Rating: " + rating + " ★" : ""));
-    }
-
-
 }
