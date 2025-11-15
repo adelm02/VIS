@@ -7,16 +7,20 @@ import interfaces.*;
 import java.io.*;
 import java.net.*;
 import java.nio.file.*;
+import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.*;
 
 public class WebServer {
 
     public static void main(String[] args) throws Exception {
-        // Initialize database
         DB.initSchema();
 
-        // Create HTTP server on port 8081
+        if (isDatabaseEmpty()) {
+            DB.seed();
+        }
         HttpServer server = HttpServer.create(new InetSocketAddress(8081), 0);
 
         // API endpoints
@@ -25,7 +29,6 @@ public class WebServer {
         server.createContext("/api/reservations/rate", new RatingHandler());
         server.createContext("/api/customer", new CustomerHandler());
 
-        // Static files
         server.createContext("/", new StaticHandler());
 
         server.setExecutor(null);
@@ -44,7 +47,7 @@ public class WebServer {
         System.out.println("Press Ctrl+C to stop...");
     }
 
-    // ==================== HANDLERS ====================
+    //HANDLERS
 
     static class LessonsHandler implements HttpHandler {
         @Override
@@ -314,7 +317,7 @@ public class WebServer {
         }
     }
 
-    // ==================== HELPERS ====================
+    // Helpers
 
     static void setCORS(HttpExchange ex) {
         ex.getResponseHeaders().set("Access-Control-Allow-Origin", "*");
@@ -357,5 +360,13 @@ public class WebServer {
     static String esc(String s) {
         if (s == null) return "";
         return s.replace("\"", "\\\"").replace("\n", "\\n");
+    }
+
+    private static boolean isDatabaseEmpty() throws SQLException {
+        try (Connection c = DB.get();
+             Statement s = c.createStatement();
+             ResultSet rs = s.executeQuery("SELECT COUNT(*) FROM Lekce")) {
+            return rs.next() && rs.getInt(1) == 0;
+        }
     }
 }

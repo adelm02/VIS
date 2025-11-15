@@ -139,20 +139,83 @@ public class DB {
                 ps.setString(5, "Crossfit");
                 ps.setString(6, "Pondělí–Středa–Pátek");
                 ps.executeUpdate();
+
+                // Trener 2
+                ps.setInt(1, 2);
+                ps.setString(2, "Jana Dvořáková");
+                ps.setString(3, "jana@fit.cz");
+                ps.setString(4, "fit123");
+                ps.setString(5, "Pilates");
+                ps.setString(6, "Úterý–Čtvrtek–Sobota");
+                ps.executeUpdate();
+
+                // Trener 3
+                ps.setInt(1, 3);
+                ps.setString(2, "Tomáš Král");
+                ps.setString(3, "tomas@fit.cz");
+                ps.setString(4, "gympass");
+                ps.setString(5, "Kruhový trénink");
+                ps.setString(6, "Pondělí–Středa–Pátek");
+                ps.executeUpdate();
+
+                // Trener 4
+                ps.setInt(1, 4);
+                ps.setString(2, "Lucie Benešová");
+                ps.setString(3, "lucie@fit.cz");
+                ps.setString(4, "yoga2024");
+                ps.setString(5, "Jóga");
+                ps.setString(6, "Pondělí–Čtvrtek–Neděle");
+                ps.executeUpdate();
+
+                // Trener 5
+                ps.setInt(1, 5);
+                ps.setString(2, "Martin Svoboda");
+                ps.setString(3, "martin@fit.cz");
+                ps.setString(4, "runfit");
+                ps.setString(5, "Kickbox");
+                ps.setString(6, "Úterý–Pátek–Neděle");
+                ps.executeUpdate();
             }
 
-            // Lekce (id 1 a 2) – stejné jako používáš v kódu
+
+        // Lekce - PŘIDEJTE VÍCE s různými trenéry
             try (PreparedStatement ps = c.prepareStatement(
                     "INSERT INTO Lekce(id,title,trainer,day,time,capacity,loggedIn,price) VALUES(?,?,?,?,?,?,?,?)")) {
-                // l1: Crossfit
+
+                // l1: Crossfit - Petr Novák
                 ps.setInt(1, 1); ps.setString(2, "Crossfit"); ps.setString(3, "Petr Novák");
                 ps.setString(4, "Monday"); ps.setString(5, "10:00");
                 ps.setInt(6, 10); ps.setInt(7, 0); ps.setInt(8, 150); ps.executeUpdate();
 
-                // l2: Yoga (kapacita 1)
+                // l2: Yoga - Petr Novák
                 ps.setInt(1, 2); ps.setString(2, "Yoga"); ps.setString(3, "Petr Novák");
                 ps.setString(4, "Monday"); ps.setString(5, "12:00");
                 ps.setInt(6, 1); ps.setInt(7, 0); ps.setInt(8, 30); ps.executeUpdate();
+
+                // l3: Pilates - Jana Dvořáková
+                ps.setInt(1, 3); ps.setString(2, "Pilates"); ps.setString(3, "Jana Dvořáková");
+                ps.setString(4, "Tuesday"); ps.setString(5, "09:00");
+                ps.setInt(6, 15); ps.setInt(7, 0); ps.setInt(8, 120); ps.executeUpdate();
+
+                // l4: Kruhový trénink - Tomáš Král
+                ps.setInt(1, 4); ps.setString(2, "Kruhový trénink"); ps.setString(3, "Tomáš Král");
+                ps.setString(4, "Wednesday"); ps.setString(5, "18:00");
+                ps.setInt(6, 12); ps.setInt(7, 0); ps.setInt(8, 100); ps.executeUpdate();
+
+                // l5: Ranní jóga - Lucie Benešová
+                ps.setInt(1, 5); ps.setString(2, "Ranní jóga"); ps.setString(3, "Lucie Benešová");
+                ps.setString(4, "Thursday"); ps.setString(5, "07:00");
+                ps.setInt(6, 20); ps.setInt(7, 0); ps.setInt(8, 80); ps.executeUpdate();
+
+                // l6: Kickbox - Martin Svoboda
+                ps.setInt(1, 6); ps.setString(2, "Kickbox"); ps.setString(3, "Martin Svoboda");
+                ps.setString(4, "Friday"); ps.setString(5, "19:00");
+                ps.setInt(6, 8); ps.setInt(7, 0); ps.setInt(8, 180); ps.executeUpdate();
+
+                // l7: Večerní Pilates - Jana Dvořáková
+                ps.setInt(1, 7); ps.setString(2, "Večerní Pilates"); ps.setString(3, "Jana Dvořáková");
+                ps.setString(4, "Thursday"); ps.setString(5, "20:00");
+                ps.setInt(6, 15); ps.setInt(7, 0); ps.setInt(8, 120); ps.executeUpdate();
             }
 
             // Recepcni
