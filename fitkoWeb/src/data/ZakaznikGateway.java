@@ -4,6 +4,7 @@ import interfaces.IZakaznikRepository;
 
 import java.sql.*;
 import java.util.*;
+import java.security.MessageDigest;
 
 public class ZakaznikGateway implements IZakaznikRepository {
 
@@ -84,6 +85,78 @@ public class ZakaznikGateway implements IZakaznikRepository {
         try (Connection c = DB.get(); PreparedStatement ps = c.prepareStatement("DELETE FROM Zakaznik WHERE id=?")) {
             ps.setInt(1, id);
             ps.executeUpdate();
+        }
+    }
+
+    // ========================================================================
+    // PŘIHLÁŠENÍ S DEBUGEM
+    // ========================================================================
+
+    public ZakaznikDto login(String email, String password) throws SQLException {
+        String hashedPassword = hashPassword(password);
+
+        System.out.println("\n╔══════════════════════════════════════════════════════════╗");
+        System.out.println("║ 🔍 DEBUG LOGIN                                           ║");
+        System.out.println("╚══════════════════════════════════════════════════════════╝");
+        System.out.println("   📧 Email: " + email);
+        System.out.println("   🔑 Zadané heslo: " + password);
+        System.out.println("   🔐 Zadané heslo (hash): " + hashedPassword);
+
+        String sql = "SELECT id, name, email, password, credit FROM Zakaznik WHERE email = ?";
+
+        try (Connection c = DB.get();
+             PreparedStatement ps = c.prepareStatement(sql)) {
+
+            ps.setString(1, email);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    String storedPassword = rs.getString("password");
+
+                    System.out.println("   💾 Heslo v DB: " + storedPassword);
+                    System.out.println("   ✔️  Shoduje se? " + hashedPassword.equals(storedPassword));
+                    System.out.println("   📏 Délka hash (zadané): " + hashedPassword.length());
+                    System.out.println("   📏 Délka hash (v DB):   " + storedPassword.length());
+
+                    if (hashedPassword.equals(storedPassword)) {
+                        ZakaznikDto dto = new ZakaznikDto();
+                        dto.id = rs.getInt("id");
+                        dto.name = rs.getString("name");
+                        dto.email = rs.getString("email");
+                        dto.setPassword(rs.getString("password"));
+                        dto.credit = rs.getInt("credit");
+
+                        System.out.println("   ✅ ÚSPĚCH: Přihlášen jako " + dto.name + " (Kredity: " + dto.credit + ")");
+                        System.out.println("╚══════════════════════════════════════════════════════════╝\n");
+                        return dto;
+                    } else {
+                        System.out.println("   ❌ CHYBA: Hash hesla se NESHODUJE!");
+                        System.out.println("╚══════════════════════════════════════════════════════════╝\n");
+                        return null;
+                    }
+                } else {
+                    System.out.println("   ❌ CHYBA: Email nenalezen v databázi!");
+                    System.out.println("╚══════════════════════════════════════════════════════════╝\n");
+                    return null;
+                }
+            }
+        }
+    }
+
+    private String hashPassword(String password) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] hash = digest.digest(password.getBytes("UTF-8"));
+
+            StringBuilder hexString = new StringBuilder();
+            for (byte b : hash) {
+                String hex = Integer.toHexString(0xff & b);
+                if (hex.length() == 1) hexString.append('0');
+                hexString.append(hex);
+            }
+            return hexString.toString();
+        } catch (Exception e) {
+            throw new RuntimeException("Chyba při hashování hesla: " + e.getMessage());
         }
     }
 }

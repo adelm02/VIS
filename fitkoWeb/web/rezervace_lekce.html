@@ -71,8 +71,7 @@
     </div>
 
     <div id="message" class="message"></div>
-
-    <div id="loading" class="loading" style="display:none;">Loading...</div>
+    <div id="loading" class="loading">Přihlašuji se...</div>
 
     <table class="lessons-table">
         <thead>
@@ -86,8 +85,7 @@
             <th>Action</th>
         </tr>
         </thead>
-        <tbody id="lessonsTable">
-        </tbody>
+        <tbody id="lessonsTable"></tbody>
     </table>
 </div>
 
@@ -123,34 +121,155 @@
 </div>
 
 <script>
-    const API_URL = 'http://localhost:8081/api';
-    const CUSTOMER_ID = 1; // Anna Nováková
+    // ============================================================================
+    // PŘIHLAŠOVACÍ SYSTÉM (INLINE)
+    // ============================================================================
+    const AUTH = {
+        currentUser: null,
+        API_URL: 'http://localhost:8081/api',
 
+        async requireLogin() {
+            const savedUser = localStorage.getItem('fitko_user');
+            if (savedUser) {
+                this.currentUser = JSON.parse(savedUser);
+                console.log('✅ Přihlášen z localStorage:', this.currentUser.name);
+                return this.currentUser;
+            }
+            return await this.showLoginDialog();
+        },
+
+        async showLoginDialog() {
+            return new Promise((resolve, reject) => {
+                const modal = document.createElement('div');
+                modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;z-index:10000;';
+                modal.innerHTML = `
+                <div style="background:white;padding:40px;border-radius:12px;max-width:400px;width:90%;">
+                    <h2 style="margin:0 0 10px 0;color:#2d2d2d;">🔐 Přihlášení</h2>
+                    <p style="color:#666;margin:0 0 30px 0;font-size:14px;">Pro pokračování se prosím přihlaste</p>
+                    <div id="login-error" style="display:none;background:#ffebee;color:#c62828;padding:12px;border-radius:6px;margin-bottom:20px;font-size:14px;"></div>
+                    <div style="margin-bottom:20px;">
+                        <label style="display:block;margin-bottom:8px;font-weight:600;">Email:</label>
+                        <input type="email" id="login-email" value="anna@fit.cz" style="width:100%;padding:12px;border:2px solid #ddd;border-radius:6px;font-size:14px;box-sizing:border-box;" />
+                    </div>
+                    <div style="margin-bottom:30px;">
+                        <label style="display:block;margin-bottom:8px;font-weight:600;">Heslo:</label>
+                        <input type="password" id="login-password" value="pwd" style="width:100%;padding:12px;border:2px solid #ddd;border-radius:6px;font-size:14px;box-sizing:border-box;" />
+                    </div>
+                    <div style="display:flex;gap:12px;">
+                        <button id="login-submit" style="flex:1;background:#000;color:white;border:none;padding:14px;border-radius:6px;font-weight:600;cursor:pointer;">Přihlásit se</button>
+                        <button id="login-cancel" style="background:#f5f5f5;color:#666;border:none;padding:14px 24px;border-radius:6px;font-weight:600;cursor:pointer;">Zrušit</button>
+                    </div>
+                    <div style="margin-top:20px;padding-top:20px;border-top:1px solid #eee;">
+                        <p style="font-size:12px;color:#999;margin:0;">💡 Heslo: <strong>pwd</strong><br>anna@fit.cz (500 Kč) | marek@fit.cz (80 Kč)</p>
+                    </div>
+                </div>
+            `;
+                document.body.appendChild(modal);
+
+                const emailInput = modal.querySelector('#login-email');
+                const passwordInput = modal.querySelector('#login-password');
+                const submitBtn = modal.querySelector('#login-submit');
+                const cancelBtn = modal.querySelector('#login-cancel');
+                const errorDiv = modal.querySelector('#login-error');
+
+                emailInput.focus();
+                emailInput.select();
+
+                const handleEnter = (e) => { if (e.key === 'Enter') submitBtn.click(); };
+                emailInput.addEventListener('keypress', handleEnter);
+                passwordInput.addEventListener('keypress', handleEnter);
+
+                submitBtn.onclick = async () => {
+                    const email = emailInput.value.trim();
+                    const password = passwordInput.value.trim();
+
+                    if (!email || !password) {
+                        errorDiv.textContent = '❌ Vyplňte email i heslo';
+                        errorDiv.style.display = 'block';
+                        return;
+                    }
+
+                    submitBtn.disabled = true;
+                    submitBtn.textContent = 'Ověřuji...';
+                    errorDiv.style.display = 'none';
+
+                    try {
+                        const response = await fetch(`${this.API_URL}/login`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ email, password })
+                        });
+
+                        const data = await response.json();
+
+                        if (data.success && data.user) {
+                            localStorage.setItem('fitko_user', JSON.stringify(data.user));
+                            this.currentUser = data.user;
+                            document.body.removeChild(modal);
+                            resolve(data.user);
+                        } else {
+                            errorDiv.textContent = '❌ ' + (data.error || 'Nesprávné přihlašovací údaje');
+                            errorDiv.style.display = 'block';
+                            submitBtn.disabled = false;
+                            submitBtn.textContent = 'Přihlásit se';
+                        }
+                    } catch (error) {
+                        errorDiv.textContent = '❌ Chyba: ' + error.message;
+                        errorDiv.style.display = 'block';
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = 'Přihlásit se';
+                    }
+                };
+
+                cancelBtn.onclick = () => {
+                    document.body.removeChild(modal);
+                    reject(new Error('Přihlášení zrušeno'));
+                };
+            });
+        }
+    };
+
+    // ============================================================================
+    // APLIKACE
+    // ============================================================================
+    const API_URL = 'http://localhost:8081/api';
+    let CUSTOMER_ID = null;
     let currentUserCredits = 0;
     let selectedLesson = null;
     let lessons = [];
 
-    async function loadCustomer() {
+    async function initApp() {
+        console.log('🚀 Spouštím aplikaci...');
+        document.getElementById('loading').style.display = 'block';
+
         try {
-            const res = await fetch(`${API_URL}/customer?id=${CUSTOMER_ID}`);
-            const customer = await res.json();
-            currentUserCredits = customer.credit;
+            const user = await AUTH.requireLogin();
+            CUSTOMER_ID = user.id;
+            currentUserCredits = user.credit;
             document.getElementById('userCredits').textContent = currentUserCredits;
-        } catch (e) {
-            console.error('Failed to load customer:', e);
+
+            console.log('✅ Přihlášen:', user.name, 'Kredity:', currentUserCredits);
+
+            await loadLessons();
+
+        } catch (error) {
+            console.error('❌ Přihlášení selhalo:', error);
+            document.getElementById('loading').style.display = 'none';
+            showMessage('Musíte se přihlásit pro rezervaci lekcí', 'error');
+            setTimeout(() => initApp(), 2000);
         }
     }
 
     async function loadLessons() {
-        document.getElementById('loading').style.display = 'block';
         try {
             const res = await fetch(`${API_URL}/lessons`);
             lessons = await res.json();
+            console.log('📋 Načteno lekcí:', lessons.length);
             renderLessons();
             loadTrainers();
         } catch (e) {
-            console.error('Failed to load lessons:', e);
-            showMessage('Failed to load lessons', 'error');
+            console.error('Chyba při načítání lekcí:', e);
+            showMessage('Chyba při načítání lekcí', 'error');
         } finally {
             document.getElementById('loading').style.display = 'none';
         }
@@ -170,22 +289,18 @@
         tbody.innerHTML = filtered.map(lesson => {
             const isFull = lesson.loggedIn >= lesson.capacity;
             return `
-                    <tr>
-                        <td>${lesson.title}</td>
-                        <td>${lesson.day}</td>
-                        <td>${lesson.time}</td>
-                        <td>${lesson.trainer}</td>
-                        <td class="capacity ${isFull ? 'full' : ''}">${lesson.loggedIn}/${lesson.capacity} ${isFull ? 'FULL' : ''}</td>
-                        <td>${lesson.price} credits</td>
-                        <td>
-                            <button class="btn-reserve"
-                                    onclick="openReservationModal(${lesson.id})"
-                                    ${isFull ? 'disabled' : ''}>
-                                Reserve
-                            </button>
-                        </td>
-                    </tr>
-                `;
+            <tr>
+                <td>${lesson.title}</td>
+                <td>${lesson.day}</td>
+                <td>${lesson.time}</td>
+                <td>${lesson.trainer}</td>
+                <td class="capacity ${isFull ? 'full' : ''}">${lesson.loggedIn}/${lesson.capacity} ${isFull ? 'FULL' : ''}</td>
+                <td>${lesson.price} credits</td>
+                <td>
+                    <button class="btn-reserve" onclick="openReservationModal(${lesson.id})" ${isFull ? 'disabled' : ''}>Reserve</button>
+                </td>
+            </tr>
+        `;
         }).join('');
     }
 
@@ -261,7 +376,7 @@
                 showMessage(data.error || 'Chyba při vytváření rezervace', 'error');
             }
         } catch (e) {
-            console.error('Failed to create reservation:', e);
+            console.error('Chyba při rezervaci:', e);
             showMessage('Chyba při vytváření rezervace', 'error');
         } finally {
             closeModal();
@@ -271,9 +386,8 @@
     document.getElementById('filterDay').addEventListener('change', renderLessons);
     document.getElementById('filterTrainer').addEventListener('change', renderLessons);
 
-    // Initialize
-    loadCustomer();
-    loadLessons();
+    // SPUSTIT APLIKACI
+    initApp();
 </script>
 </body>
 </html>

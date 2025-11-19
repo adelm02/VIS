@@ -118,13 +118,20 @@ public class DB {
     public static void seed() throws SQLException {
         try (Connection c = get()) {
             // Zakaznici
-            try (PreparedStatement ps = c.prepareStatement(
-                    "INSERT INTO Zakaznik(id,name,email,password,credit) VALUES(?,?,?,?,?)")) {
-                ps.setInt(1, 1); ps.setString(2, "Anna Nováková"); ps.setString(3, "anna@fit.cz");
-                ps.setString(4, "pwd"); ps.setInt(5, 500); ps.executeUpdate();
+            try (PreparedStatement ps = c.prepareStatement("INSERT INTO Zakaznik(id,name,email,password,credit) VALUES(?,?,?,?,?)")) {
+                ps.setInt(1, 1);
+                ps.setString(2, "Anna Nováková");
+                ps.setString(3, "anna@fit.cz");
+                ps.setString(4, "a1159e9df3670d549d04524532629f5477ceb7deec9b45e47e8c009506ecb2c8"); // pwd -> SHA-256
+                ps.setInt(5, 500);
+                ps.executeUpdate();
 
-                ps.setInt(1, 2); ps.setString(2, "Marek Malý"); ps.setString(3, "marek@fit.cz");
-                ps.setString(4, "pwd"); ps.setInt(5, 80); ps.executeUpdate();
+                ps.setInt(1, 2);
+                ps.setString(2, "Marek Malý");
+                ps.setString(3, "marek@fit.cz");
+                ps.setString(4, "a1159e9df3670d549d04524532629f5477ceb7deec9b45e47e8c009506ecb2c8");// pwd -> SHA-256
+                ps.setInt(5, 80);
+                ps.executeUpdate();
             }
 
             // Trenéři - 10 trenérů

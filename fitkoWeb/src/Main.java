@@ -15,7 +15,6 @@ import util.AuditLogObserver;
 public class Main {
     public static void main(String[] args) throws Exception {
         DB.initSchema();
-        DB.clearAll();
         DB.seed();
 
         Zakaznik z1 = new osobniZakaznik(1, "Anna Nováková", "anna@fit.cz", 500, "Anna", "Nováková", "1995-01-01");

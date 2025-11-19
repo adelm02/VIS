@@ -5,9 +5,7 @@ import service.*;
 import java.util.List;
 import java.util.Scanner;
 
-/**
- * Konzolová aplikace pro trenéra - U8 Správa rozvrhu
- */
+
 public class TrenerKonzole {
     private final LekceService lekceService;
     private final LekceTableModule lekceTableModule;
@@ -25,7 +23,7 @@ public class TrenerKonzole {
 
     public void start() throws Exception {
         System.out.println("╔══════════════════════════════════════════════╗");
-        System.out.println("║     FITKO - Správa rozvrhu (Trenér)         ║");
+        System.out.println("║     FITKO - Správa rozvrhu (Trenér)          ║");
         System.out.println("╚══════════════════════════════════════════════╝");
         System.out.println();
         System.out.println("Přihlášen jako: " + trenerJmeno);
@@ -56,14 +54,14 @@ public class TrenerKonzole {
                     System.out.println("\nDěkujeme za použití systému FITKO!");
                     break;
                 default:
-                    System.out.println("\n❌ Neplatná volba!");
+                    System.out.println("\nNeplatná volba!");
             }
         }
     }
 
     private void printMenu() {
         System.out.println("\n" + "=".repeat(50));
-        System.out.println("📋 MENU");
+        System.out.println("MENU");
         System.out.println("=".repeat(50));
         System.out.println("1. Zobrazit můj rozvrh");
         System.out.println("2. Upravit lekci");
@@ -75,7 +73,7 @@ public class TrenerKonzole {
     }
 
     private void loadLessons() throws Exception {
-        System.out.println("📥 Načítám lekce z databáze...");
+        System.out.println("Načítám lekce z databáze...");
         List<LekceDto> allLessons = lekceService.loadAllFromFile();
 
         lekceTableModule.getAll().clear();
@@ -86,18 +84,18 @@ public class TrenerKonzole {
                 lekceTableModule.add(lekce);
             }
         }
-        System.out.println("✅ Načteno " + lekceTableModule.getAll().size() + " lekcí");
+        System.out.println("Načteno " + lekceTableModule.getAll().size() + " lekcí");
     }
 
     private void zobrazRozvrh() {
-        System.out.println("\n╔══════════════════════════════════════════════════════════════════════════════════╗");
-        System.out.println("║                              MŮJ ROZVRH LEKCÍ                                   ║");
-        System.out.println("╚══════════════════════════════════════════════════════════════════════════════════╝");
+        System.out.println("\n  ╔══════════════════════════════════════════════════════════════════════════════════╗");
+        System.out.println("  ║                              MŮJ ROZVRH LEKCÍ                                    ║");
+        System.out.println("  ╚══════════════════════════════════════════════════════════════════════════════════╝");
 
         List<Lekce> lekce = lekceTableModule.getAll();
 
         if (lekce.isEmpty()) {
-            System.out.println("\n❌ Nemáte žádné naplánované lekce.");
+            System.out.println("\nNemáte žádné naplánované lekce.");
             return;
         }
 
@@ -108,7 +106,7 @@ public class TrenerKonzole {
 
         for (Lekce l : lekce) {
             String obsazenost = l.loggedIn + "/" + l.capacity;
-            String status = l.loggedIn >= l.capacity ? "PLNÁ ⚠️" : "Volno ✅";
+            String status = l.loggedIn >= l.capacity ? "PLNÁ ⚠" : "Volno";
             String priceCzk = l.price.getAmountCzk() + " Kč";
 
             System.out.printf("%-5d %-20s %-12s %-8s %-12s %-8s %-10s%n",
@@ -128,11 +126,11 @@ public class TrenerKonzole {
             Lekce lekce = lekceTableModule.findById(id);
 
             if (lekce == null) {
-                System.out.println("\n❌ Lekce s ID " + id + " nebyla nalezena!");
+                System.out.println("\nLekce s ID " + id + " nebyla nalezena!");
                 return;
             }
 
-            System.out.println("\n📝 Úprava lekce: " + lekce.title);
+            System.out.println("\nÚprava lekce: " + lekce.title);
             System.out.println("(Pro ponechání současné hodnoty stiskněte Enter)");
             System.out.println();
 
@@ -154,11 +152,11 @@ public class TrenerKonzole {
                 try {
                     int cap = Integer.parseInt(newCapacity);
                     if (cap < lekce.loggedIn) {
-                        System.out.println("⚠️  Varování: Nová kapacita je menší než počet přihlášených (" + lekce.loggedIn + ")");
+                        System.out.println("⚠ Varování: Nová kapacita je menší než počet přihlášených (" + lekce.loggedIn + ")");
                     }
                     lekce.capacity = cap;
                 } catch (NumberFormatException e) {
-                    System.out.println("❌ Neplatná kapacita!");
+                    System.out.println("Neplatná kapacita!");
                 }
             }
 
@@ -169,23 +167,23 @@ public class TrenerKonzole {
                     int price = Integer.parseInt(newPrice);
                     lekce.price = new Price(price);
                 } catch (NumberFormatException e) {
-                    System.out.println("❌ Neplatná cena!");
+                    System.out.println("Neplatná cena!");
                 }
             }
 
             lekce.markUpdated();
             lekceService.saveAllToFile(lekceTableModule);
 
-            System.out.println("\n✅ Lekce byla úspěšně aktualizována!");
+            System.out.println("\nLekce byla úspěšně aktualizována!");
             System.out.println("📞 Volá se: LekceGateway.update(lekceDto)");
 
         } catch (NumberFormatException e) {
-            System.out.println("\n❌ Neplatné ID!");
+            System.out.println("\nNeplatné ID!");
         }
     }
 
     private void pridatLekci() throws Exception {
-        System.out.println("\n➕ Přidání nové lekce");
+        System.out.println("\nPřidání nové lekce");
         System.out.println();
 
         System.out.print("Název lekce: ");
@@ -213,14 +211,14 @@ public class TrenerKonzole {
 
         lekceService.saveAllToFile(lekceTableModule);
 
-        System.out.println("\n✅ Nová lekce byla úspěšně přidána!");
+        System.out.println("\nNová lekce byla úspěšně přidána!");
         System.out.println("📞 Volá se: LekceGateway.insert(lekceDto)");
     }
 
     private void smazatLekci() throws Exception {
         zobrazRozvrh();
 
-        System.out.print("\n🗑️  Zadejte ID lekce ke smazání: ");
+        System.out.print("\nZadejte ID lekce ke smazání: ");
         String idStr = scanner.nextLine().trim();
 
         try {
@@ -228,16 +226,16 @@ public class TrenerKonzole {
             Lekce lekce = lekceTableModule.findById(id);
 
             if (lekce == null) {
-                System.out.println("\n❌ Lekce s ID " + id + " nebyla nalezena!");
+                System.out.println("\nLekce s ID " + id + " nebyla nalezena!");
                 return;
             }
 
             if (lekce.loggedIn > 0) {
-                System.out.println("\n⚠️  VAROVÁNÍ: Lekce má " + lekce.loggedIn + " přihlášených zákazníků!");
+                System.out.println("\n⚠ VAROVÁNÍ: Lekce má " + lekce.loggedIn + " přihlášených zákazníků!");
                 System.out.print("Opravdu chcete smazat? (ano/ne): ");
                 String confirm = scanner.nextLine().trim().toLowerCase();
                 if (!confirm.equals("ano")) {
-                    System.out.println("❌ Operace zrušena.");
+                    System.out.println("Operace zrušena.");
                     return;
                 }
             }
@@ -245,11 +243,11 @@ public class TrenerKonzole {
             lekceTableModule.getAll().remove(lekce);
             lekceGateway.deleteById(id);
 
-            System.out.println("\n✅ Lekce byla úspěšně smazána!");
+            System.out.println("\nLekce byla úspěšně smazána!");
             System.out.println("📞 Volá se: LekceGateway.deleteById(id)");
 
         } catch (NumberFormatException e) {
-            System.out.println("\n❌ Neplatné ID!");
+            System.out.println("\nNeplatné ID!");
         }
     }
 
@@ -261,7 +259,7 @@ public class TrenerKonzole {
             app.start();
 
         } catch (Exception e) {
-            System.err.println("❌ Chyba aplikace: " + e.getMessage());
+            System.err.println("Chyba aplikace: " + e.getMessage());
             e.printStackTrace();
         }
     }
