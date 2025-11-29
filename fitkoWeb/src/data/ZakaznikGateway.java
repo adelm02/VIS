@@ -88,19 +88,14 @@ public class ZakaznikGateway implements IZakaznikRepository {
         }
     }
 
-    // ========================================================================
-    // PŘIHLÁŠENÍ S DEBUGEM
-    // ========================================================================
-
+    //login
     public ZakaznikDto login(String email, String password) throws SQLException {
         String hashedPassword = hashPassword(password);
 
-        System.out.println("\n╔══════════════════════════════════════════════════════════╗");
-        System.out.println("║ 🔍 DEBUG LOGIN                                           ║");
-        System.out.println("╚══════════════════════════════════════════════════════════╝");
-        System.out.println("   📧 Email: " + email);
-        System.out.println("   🔑 Zadané heslo: " + password);
-        System.out.println("   🔐 Zadané heslo (hash): " + hashedPassword);
+
+        System.out.println("Email: " + email);
+        System.out.println("Zadané heslo: " + password);
+        System.out.println("Zadané heslo (hash): " + hashedPassword);
 
         String sql = "SELECT id, name, email, password, credit FROM Zakaznik WHERE email = ?";
 
@@ -113,10 +108,10 @@ public class ZakaznikGateway implements IZakaznikRepository {
                 if (rs.next()) {
                     String storedPassword = rs.getString("password");
 
-                    System.out.println("   💾 Heslo v DB: " + storedPassword);
-                    System.out.println("   ✔️  Shoduje se? " + hashedPassword.equals(storedPassword));
-                    System.out.println("   📏 Délka hash (zadané): " + hashedPassword.length());
-                    System.out.println("   📏 Délka hash (v DB):   " + storedPassword.length());
+                    System.out.println("Heslo v DB: " + storedPassword);
+                    System.out.println("Shoduje se? " + hashedPassword.equals(storedPassword));
+                    System.out.println("Délka hash (zadané): " + hashedPassword.length());
+                    System.out.println("Délka hash (v DB):   " + storedPassword.length());
 
                     if (hashedPassword.equals(storedPassword)) {
                         ZakaznikDto dto = new ZakaznikDto();
@@ -126,17 +121,14 @@ public class ZakaznikGateway implements IZakaznikRepository {
                         dto.setPassword(rs.getString("password"));
                         dto.credit = rs.getInt("credit");
 
-                        System.out.println("   ✅ ÚSPĚCH: Přihlášen jako " + dto.name + " (Kredity: " + dto.credit + ")");
-                        System.out.println("╚══════════════════════════════════════════════════════════╝\n");
+                        System.out.println("ÚSPĚCH: Přihlášen jako " + dto.name + " (Kredity: " + dto.credit + ")");
                         return dto;
                     } else {
-                        System.out.println("   ❌ CHYBA: Hash hesla se NESHODUJE!");
-                        System.out.println("╚══════════════════════════════════════════════════════════╝\n");
+                        System.out.println("CHYBA: Hash hesla se NESHODUJE!");
                         return null;
                     }
                 } else {
-                    System.out.println("   ❌ CHYBA: Email nenalezen v databázi!");
-                    System.out.println("╚══════════════════════════════════════════════════════════╝\n");
+                    System.out.println("CHYBA: Email nenalezen v databázi!");
                     return null;
                 }
             }

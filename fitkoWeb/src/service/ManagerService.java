@@ -10,7 +10,7 @@ import domain.Manager;
 
 public class ManagerService {
 
-    // SAVE ALL TO FILE
+    // save all to file
     public void saveAllToFile(ManagerTableModule table) throws Exception {
         ManagerGateway gw = new ManagerGateway();
 
@@ -28,7 +28,7 @@ public class ManagerService {
         }
     }
 
-    // LOAD ALL FROM FILE
+    // load all from files
     public List<ManagerDto> loadAllFromFile() throws Exception {
         ManagerGateway gw = new ManagerGateway();
         return gw.findAll();

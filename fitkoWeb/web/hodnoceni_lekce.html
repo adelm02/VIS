@@ -52,15 +52,9 @@
         currentUser: null,
         API_URL: 'http://localhost:8081/api',
 
-        async requireLogin() {
-            const savedUser = localStorage.getItem('fitko_user');
-            if (savedUser) {
-                this.currentUser = JSON.parse(savedUser);
-                console.log('Přihlášen z localStorage:', this.currentUser.name);
-                return this.currentUser;
-            }
-            return await this.showLoginDialog();
-        },
+            async requireLogin() {
+                return await this.showLoginDialog();
+            },
 
         async showLoginDialog() {
             return new Promise((resolve, reject) => {
@@ -158,7 +152,6 @@
     let reservations = [];
 
     async function initApp() {
-        console.log('🚀 Spouštím aplikaci...');
         document.getElementById('loading').style.display = 'block';
 
         try {
@@ -180,7 +173,7 @@
         try {
             const res = await fetch(`${API_URL}/reservations?customerId=${CUSTOMER_ID}`);
             reservations = await res.json();
-            console.log('📋 Načteno rezervací:', reservations.length);
+            console.log('Načteno rezervací:', reservations.length);
             renderReservations();
         } catch (e) {
             console.error('Chyba při načítání rezervací:', e);
@@ -285,7 +278,6 @@
         setTimeout(() => msg.style.display = 'none', 5000);
     }
 
-    // SPUSTIT APLIKACI
     initApp();
 </script>
 </body>

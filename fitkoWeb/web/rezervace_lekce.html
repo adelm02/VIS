@@ -121,20 +121,13 @@
 </div>
 
 <script>
-    // ============================================================================
-    // PŘIHLAŠOVACÍ SYSTÉM (INLINE)
-    // ============================================================================
+
+//login
     const AUTH = {
         currentUser: null,
         API_URL: 'http://localhost:8081/api',
 
         async requireLogin() {
-            const savedUser = localStorage.getItem('fitko_user');
-            if (savedUser) {
-                this.currentUser = JSON.parse(savedUser);
-                console.log('✅ Přihlášen z localStorage:', this.currentUser.name);
-                return this.currentUser;
-            }
             return await this.showLoginDialog();
         },
 
@@ -184,7 +177,7 @@
                     const password = passwordInput.value.trim();
 
                     if (!email || !password) {
-                        errorDiv.textContent = '❌ Vyplňte email i heslo';
+                        errorDiv.textContent = 'Vyplňte email i heslo';
                         errorDiv.style.display = 'block';
                         return;
                     }
@@ -208,13 +201,13 @@
                             document.body.removeChild(modal);
                             resolve(data.user);
                         } else {
-                            errorDiv.textContent = '❌ ' + (data.error || 'Nesprávné přihlašovací údaje');
+                            errorDiv.textContent = (data.error || 'Nesprávné přihlašovací údaje');
                             errorDiv.style.display = 'block';
                             submitBtn.disabled = false;
                             submitBtn.textContent = 'Přihlásit se';
                         }
                     } catch (error) {
-                        errorDiv.textContent = '❌ Chyba: ' + error.message;
+                        errorDiv.textContent = 'Chyba: ' + error.message;
                         errorDiv.style.display = 'block';
                         submitBtn.disabled = false;
                         submitBtn.textContent = 'Přihlásit se';
@@ -229,9 +222,6 @@
         }
     };
 
-    // ============================================================================
-    // APLIKACE
-    // ============================================================================
     const API_URL = 'http://localhost:8081/api';
     let CUSTOMER_ID = null;
     let currentUserCredits = 0;
@@ -239,7 +229,7 @@
     let lessons = [];
 
     async function initApp() {
-        console.log('🚀 Spouštím aplikaci...');
+        console.log('Spouštím aplikaci...');
         document.getElementById('loading').style.display = 'block';
 
         try {
@@ -248,12 +238,12 @@
             currentUserCredits = user.credit;
             document.getElementById('userCredits').textContent = currentUserCredits;
 
-            console.log('✅ Přihlášen:', user.name, 'Kredity:', currentUserCredits);
+            console.log('Přihlášen:', user.name, 'Kredity:', currentUserCredits);
 
             await loadLessons();
 
         } catch (error) {
-            console.error('❌ Přihlášení selhalo:', error);
+            console.error('Přihlášení selhalo:', error);
             document.getElementById('loading').style.display = 'none';
             showMessage('Musíte se přihlásit pro rezervaci lekcí', 'error');
             setTimeout(() => initApp(), 2000);
@@ -264,7 +254,7 @@
         try {
             const res = await fetch(`${API_URL}/lessons`);
             lessons = await res.json();
-            console.log('📋 Načteno lekcí:', lessons.length);
+            console.log('Načteno lekcí:', lessons.length);
             renderLessons();
             loadTrainers();
         } catch (e) {
@@ -386,7 +376,6 @@
     document.getElementById('filterDay').addEventListener('change', renderLessons);
     document.getElementById('filterTrainer').addEventListener('change', renderLessons);
 
-    // SPUSTIT APLIKACI
     initApp();
 </script>
 </body>
