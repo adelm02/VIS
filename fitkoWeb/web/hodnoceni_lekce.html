@@ -48,9 +48,6 @@
 </div>
 
 <script>
-    // ============================================================================
-    // PŘIHLAŠOVACÍ SYSTÉM (INLINE)
-    // ============================================================================
     const AUTH = {
         currentUser: null,
         API_URL: 'http://localhost:8081/api',
@@ -59,7 +56,7 @@
             const savedUser = localStorage.getItem('fitko_user');
             if (savedUser) {
                 this.currentUser = JSON.parse(savedUser);
-                console.log('✅ Přihlášen z localStorage:', this.currentUser.name);
+                console.log('Přihlášen z localStorage:', this.currentUser.name);
                 return this.currentUser;
             }
             return await this.showLoginDialog();
@@ -87,7 +84,7 @@
                         <button id="login-cancel" style="background:#f5f5f5;color:#666;border:none;padding:14px 24px;border-radius:6px;font-weight:600;cursor:pointer;">Zrušit</button>
                     </div>
                     <div style="margin-top:20px;padding-top:20px;border-top:1px solid #eee;">
-                        <p style="font-size:12px;color:#999;margin:0;">💡 Heslo: <strong>pwd</strong><br>anna@fit.cz (500 Kč) | marek@fit.cz (80 Kč)</p>
+                        <p style="font-size:12px;color:#999;margin:0;">Heslo: <strong>pwd</strong><br>anna@fit.cz (500 Kč) | marek@fit.cz (80 Kč)</p>
                     </div>
                 </div>
             `;
@@ -111,7 +108,7 @@
                     const password = passwordInput.value.trim();
 
                     if (!email || !password) {
-                        errorDiv.textContent = '❌ Vyplňte email i heslo';
+                        errorDiv.textContent = 'Vyplňte email i heslo';
                         errorDiv.style.display = 'block';
                         return;
                     }
@@ -135,13 +132,13 @@
                             document.body.removeChild(modal);
                             resolve(data.user);
                         } else {
-                            errorDiv.textContent = '❌ ' + (data.error || 'Nesprávné přihlašovací údaje');
+                            errorDiv.textContent = (data.error || 'Nesprávné přihlašovací údaje');
                             errorDiv.style.display = 'block';
                             submitBtn.disabled = false;
                             submitBtn.textContent = 'Přihlásit se';
                         }
                     } catch (error) {
-                        errorDiv.textContent = '❌ Chyba: ' + error.message;
+                        errorDiv.textContent = 'Chyba: ' + error.message;
                         errorDiv.style.display = 'block';
                         submitBtn.disabled = false;
                         submitBtn.textContent = 'Přihlásit se';
@@ -156,9 +153,6 @@
         }
     };
 
-    // ============================================================================
-    // APLIKACE
-    // ============================================================================
     const API_URL = 'http://localhost:8081/api';
     let CUSTOMER_ID = null;
     let reservations = [];
@@ -170,12 +164,12 @@
         try {
             const user = await AUTH.requireLogin();
             CUSTOMER_ID = user.id;
-            console.log('✅ Přihlášen:', user.name, '(ID:', user.id, ')');
+            console.log('Přihlášen:', user.name, '(ID:', user.id, ')');
 
             await loadReservations();
 
         } catch (error) {
-            console.error('❌ Přihlášení selhalo:', error);
+            console.error('Přihlášení selhalo:', error);
             document.getElementById('loading').style.display = 'none';
             showMessage('Musíte se přihlásit pro hodnocení lekcí', 'error');
             setTimeout(() => initApp(), 2000);

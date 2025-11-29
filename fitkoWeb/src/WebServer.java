@@ -24,7 +24,7 @@ public class WebServer {
         }
 
         if (isEmpty) {
-            System.out.println("📥 Databáze je prázdná, naplňuji testovacími daty...");
+            System.out.println("Databáze je prázdná, naplňuji testovacími daty...");
             DB.seed();
         }
 
