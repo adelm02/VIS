@@ -8,16 +8,9 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Service pro práci s lekcemi v CSV souboru
- * Ukázka práce s CSV - data jsou nezávislá na databázi
- */
 public class LekceService {
     private static final String CSV_FILE = "lekce.csv";
 
-    /**
-     * Uloží všechny lekce z TableModule do CSV souboru
-     */
     public void saveAllToFile(LekceTableModule table) throws Exception {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(CSV_FILE))) {
             for (Lekce l : table.getAll()) {
@@ -36,18 +29,15 @@ public class LekceService {
                 writer.newLine();
             }
         }
-        System.out.println("💾 Uloženo " + table.getAll().size() + " lekcí do " + CSV_FILE);
+        System.out.println("Uloženo " + table.getAll().size() + " lekcí do " + CSV_FILE);
     }
 
-    /**
-     * Načte všechny lekce z CSV souboru
-     */
     public List<LekceDto> loadAllFromFile() throws Exception {
         List<LekceDto> lessons = new ArrayList<>();
 
         File file = new File(CSV_FILE);
         if (!file.exists()) {
-            System.out.println("⚠️  Soubor " + CSV_FILE + " neexistuje, vracím prázdný seznam");
+            System.out.println("Soubor " + CSV_FILE + " neexistuje, vracím prázdný seznam");
             return lessons;
         }
 
@@ -67,20 +57,17 @@ public class LekceService {
                     LekceDto dto = parseCsvLine(line);
                     lessons.add(dto);
                 } catch (Exception e) {
-                    System.err.println("⚠️  Chyba na řádku " + lineNumber + ": " + e.getMessage());
-                    System.err.println("   Řádek: " + line);
+                    System.err.println("Chyba na řádku " + lineNumber + ": " + e.getMessage());
+                    System.err.println("Řádek: " + line);
                 }
             }
         }
 
-        System.out.println("📂 Načteno " + lessons.size() + " lekcí z " + CSV_FILE);
+        System.out.println("Načteno " + lessons.size() + " lekcí z " + CSV_FILE);
         return lessons;
     }
 
-    /**
-     * Parsuje jeden řádek CSV na LekceDto
-     * Formát: id,title,trainer,day,time,capacity,loggedIn,price
-     */
+
     private LekceDto parseCsvLine(String line) {
         String[] parts = line.split(",");
 
@@ -103,9 +90,7 @@ public class LekceService {
         return dto;
     }
 
-    /**
-     * Escapuje speciální znaky v CSV (čárky, uvozovky)
-     */
+
     private String escapeCsv(String value) {
         if (value == null) {
             return "";

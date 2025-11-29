@@ -17,10 +17,10 @@ public class Manager {
 
     public void changePosition(String newPosition) {
         this.position = newPosition;
-        System.out.println(name + " now holds the position: " + newPosition);
+        System.out.println(name + " má novou pozici: " + newPosition);
     }
 
     public void infoPrint() {
-        System.out.println("Manager: " + name + " | Login: " + login + " | Position: " + position);
+        System.out.println("Manažer: " + name + " | Login: " + login + " | Pozice: " + position);
     }
 }

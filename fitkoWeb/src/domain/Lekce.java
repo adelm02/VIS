@@ -35,10 +35,10 @@ public class Lekce extends BaseEntity {
         if (loggedIn < capacity) {
             registeredCustomers.add(z);
             loggedIn++;
-            System.out.println(z.name + " registered to " + title);
+            System.out.println(z.name + " byl registrován na lekci " + title);
             markUpdated();
         } else {
-            System.out.println("Lesson is full.");
+            System.out.println("Lekce je již plná.");
         }
     }
 

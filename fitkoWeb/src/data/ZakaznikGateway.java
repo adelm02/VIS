@@ -88,15 +88,9 @@ public class ZakaznikGateway implements IZakaznikRepository {
         }
     }
 
-    //login
+    // Login metoda - VYČIŠTĚNÁ
     public ZakaznikDto login(String email, String password) throws SQLException {
         String hashedPassword = hashPassword(password);
-
-
-        System.out.println("Email: " + email);
-        System.out.println("Zadané heslo: " + password);
-        System.out.println("Zadané heslo (hash): " + hashedPassword);
-
         String sql = "SELECT id, name, email, password, credit FROM Zakaznik WHERE email = ?";
 
         try (Connection c = DB.get();
@@ -108,11 +102,6 @@ public class ZakaznikGateway implements IZakaznikRepository {
                 if (rs.next()) {
                     String storedPassword = rs.getString("password");
 
-                    System.out.println("Heslo v DB: " + storedPassword);
-                    System.out.println("Shoduje se? " + hashedPassword.equals(storedPassword));
-                    System.out.println("Délka hash (zadané): " + hashedPassword.length());
-                    System.out.println("Délka hash (v DB):   " + storedPassword.length());
-
                     if (hashedPassword.equals(storedPassword)) {
                         ZakaznikDto dto = new ZakaznikDto();
                         dto.id = rs.getInt("id");
@@ -120,19 +109,12 @@ public class ZakaznikGateway implements IZakaznikRepository {
                         dto.email = rs.getString("email");
                         dto.setPassword(rs.getString("password"));
                         dto.credit = rs.getInt("credit");
-
-                        System.out.println("ÚSPĚCH: Přihlášen jako " + dto.name + " (Kredity: " + dto.credit + ")");
                         return dto;
-                    } else {
-                        System.out.println("CHYBA: Hash hesla se NESHODUJE!");
-                        return null;
                     }
-                } else {
-                    System.out.println("CHYBA: Email nenalezen v databázi!");
-                    return null;
                 }
             }
         }
+        return null; // Login selhal
     }
 
     private String hashPassword(String password) {

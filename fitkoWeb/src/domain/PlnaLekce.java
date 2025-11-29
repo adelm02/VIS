@@ -9,8 +9,6 @@ public class PlnaLekce extends Lekce {
 
     @Override
     public void registerCustomer(Zakaznik z) {
-        System.out.println("Lesson is full.");
+        System.out.println("Lekce je plná (PlnaLekce).");
     }
 }
-
-

@@ -73,7 +73,6 @@ public class TrenerKonzole {
     }
 
     private void loadLessons() throws Exception {
-        System.out.println("Načítám lekce z databáze...");
         List<LekceDto> allLessons = lekceService.loadAllFromFile();
 
         lekceTableModule.getAll().clear();
@@ -84,7 +83,6 @@ public class TrenerKonzole {
                 lekceTableModule.add(lekce);
             }
         }
-        System.out.println("Načteno " + lekceTableModule.getAll().size() + " lekcí");
     }
 
     private void zobrazRozvrh() {
@@ -106,7 +104,7 @@ public class TrenerKonzole {
 
         for (Lekce l : lekce) {
             String obsazenost = l.loggedIn + "/" + l.capacity;
-            String status = l.loggedIn >= l.capacity ? "PLNÁ ⚠" : "Volno";
+            String status = l.loggedIn >= l.capacity ? "PLNÁ " : "Volno";
             String priceCzk = l.price.getAmountCzk() + " Kč";
 
             System.out.printf("%-5d %-20s %-12s %-8s %-12s %-8s %-10s%n",
@@ -118,7 +116,7 @@ public class TrenerKonzole {
     private void upravLekci() throws Exception {
         zobrazRozvrh();
 
-        System.out.print("\n🔧 Zadejte ID lekce k úpravě: ");
+        System.out.print("\nZadejte ID lekce k úpravě: ");
         String idStr = scanner.nextLine().trim();
 
         try {
@@ -152,7 +150,7 @@ public class TrenerKonzole {
                 try {
                     int cap = Integer.parseInt(newCapacity);
                     if (cap < lekce.loggedIn) {
-                        System.out.println("⚠ Varování: Nová kapacita je menší než počet přihlášených (" + lekce.loggedIn + ")");
+                        System.out.println("Varování: Nová kapacita je menší než počet přihlášených (" + lekce.loggedIn + ")");
                     }
                     lekce.capacity = cap;
                 } catch (NumberFormatException e) {
@@ -175,7 +173,6 @@ public class TrenerKonzole {
             lekceService.saveAllToFile(lekceTableModule);
 
             System.out.println("\nLekce byla úspěšně aktualizována!");
-            System.out.println("📞 Volá se: LekceGateway.update(lekceDto)");
 
         } catch (NumberFormatException e) {
             System.out.println("\nNeplatné ID!");
@@ -212,7 +209,6 @@ public class TrenerKonzole {
         lekceService.saveAllToFile(lekceTableModule);
 
         System.out.println("\nNová lekce byla úspěšně přidána!");
-        System.out.println("📞 Volá se: LekceGateway.insert(lekceDto)");
     }
 
     private void smazatLekci() throws Exception {
@@ -231,7 +227,7 @@ public class TrenerKonzole {
             }
 
             if (lekce.loggedIn > 0) {
-                System.out.println("\n⚠ VAROVÁNÍ: Lekce má " + lekce.loggedIn + " přihlášených zákazníků!");
+                System.out.println("\nVAROVÁNÍ: Lekce má " + lekce.loggedIn + " přihlášených zákazníků!");
                 System.out.print("Opravdu chcete smazat? (ano/ne): ");
                 String confirm = scanner.nextLine().trim().toLowerCase();
                 if (!confirm.equals("ano")) {
@@ -244,7 +240,6 @@ public class TrenerKonzole {
             lekceGateway.deleteById(id);
 
             System.out.println("\nLekce byla úspěšně smazána!");
-            System.out.println("📞 Volá se: LekceGateway.deleteById(id)");
 
         } catch (NumberFormatException e) {
             System.out.println("\nNeplatné ID!");
