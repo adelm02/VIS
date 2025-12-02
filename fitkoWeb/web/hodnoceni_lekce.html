@@ -20,6 +20,7 @@
         .star { font-size: 24px; cursor: pointer; color: #ddd; transition: color 0.2s; }
         .star.active { color: #ffc107; }
         .star:hover { color: #ffc107; }
+        .star.display { cursor: default; }
         textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-family: inherit; min-height: 80px; resize: vertical; }
         .btn { background: #000; color: white; border: none; padding: 10px 24px; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 14px; }
         .btn:hover { background: #333; }
@@ -29,8 +30,15 @@
         .message.error { background: #ffebee; color: #c62828; border: 1px solid #ef9a9a; }
         .loading { text-align: center; padding: 40px; color: #666; }
         .no-reservations { text-align: center; padding: 40px; color: #999; }
-        .rated { opacity: 0.6; pointer-events: none; }
+        .rated { opacity: 0.9; }
         .rated-badge { background: #4caf50; color: white; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+        .review-display { background: white; padding: 12px; border-radius: 4px; margin-top: 10px; border-left: 3px solid #4caf50; }
+        .review-display strong { color: #2e7d32; display: block; margin-bottom: 5px; }
+        .rating-display { display: flex; gap: 3px; margin-top: 10px; }
+        .tabs { display: flex; border-bottom: 2px solid #e0e0e0; margin-bottom: 20px; }
+        .tab { padding: 12px 24px; cursor: pointer; background: none; border: none; font-weight: 600; color: #666; border-bottom: 3px solid transparent; margin-bottom: -2px; }
+        .tab.active { color: #000; border-bottom-color: #000; }
+        .tab:hover { color: #000; }
     </style>
 </head>
 <body>
@@ -40,10 +48,16 @@
     </div>
 
     <div class="section">
-        <h2 class="section-title">Vaše dokončené lekce</h2>
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('pending')">K hodnocení</button>
+            <button class="tab" onclick="switchTab('rated')">Již ohodnocené</button>
+        </div>
+
         <div id="message" class="message"></div>
         <div id="loading" class="loading">Přihlašuji se...</div>
-        <div id="reservationsList"></div>
+
+        <div id="pendingReservations"></div>
+        <div id="ratedReservations" style="display: none;"></div>
     </div>
 </div>
 
@@ -52,9 +66,9 @@
         currentUser: null,
         API_URL: 'http://localhost:8081/api',
 
-            async requireLogin() {
-                return await this.showLoginDialog();
-            },
+        async requireLogin() {
+            return await this.showLoginDialog();
+        },
 
         async showLoginDialog() {
             return new Promise((resolve, reject) => {
@@ -62,7 +76,7 @@
                 modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;z-index:10000;';
                 modal.innerHTML = `
                 <div style="background:white;padding:40px;border-radius:12px;max-width:400px;width:90%;">
-                    <h2 style="margin:0 0 10px 0;color:#2d2d2d;">🔐 Přihlášení</h2>
+                    <h2 style="margin:0 0 10px 0;color:#2d2d2d;">Přihlášení</h2>
                     <p style="color:#666;margin:0 0 30px 0;font-size:14px;">Pro pokračování se prosím přihlaste</p>
                     <div id="login-error" style="display:none;background:#ffebee;color:#c62828;padding:12px;border-radius:6px;margin-bottom:20px;font-size:14px;"></div>
                     <div style="margin-bottom:20px;">
@@ -149,7 +163,7 @@
 
     const API_URL = 'http://localhost:8081/api';
     let CUSTOMER_ID = null;
-    let reservations = [];
+    let allReservations = [];
 
     async function initApp() {
         document.getElementById('loading').style.display = 'block';
@@ -172,8 +186,8 @@
     async function loadReservations() {
         try {
             const res = await fetch(`${API_URL}/reservations?customerId=${CUSTOMER_ID}`);
-            reservations = await res.json();
-            console.log('Načteno rezervací:', reservations.length);
+            allReservations = await res.json();
+            console.log('Načteno rezervací:', allReservations.length);
             renderReservations();
         } catch (e) {
             console.error('Chyba při načítání rezervací:', e);
@@ -183,27 +197,37 @@
         }
     }
 
-    function renderReservations() {
-        const container = document.getElementById('reservationsList');
+    function switchTab(tab) {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        event.target.classList.add('active');
 
-        if (reservations.length === 0) {
-            container.innerHTML = '<div class="no-reservations">Nemáte žádné dokončené lekce k hodnocení</div>';
-            return;
+        if (tab === 'pending') {
+            document.getElementById('pendingReservations').style.display = 'block';
+            document.getElementById('ratedReservations').style.display = 'none';
+        } else {
+            document.getElementById('pendingReservations').style.display = 'none';
+            document.getElementById('ratedReservations').style.display = 'block';
         }
+    }
 
-        container.innerHTML = reservations.map((res, index) => {
-            const isRated = res.rating !== null;
-            return `
-            <div class="lesson-card ${isRated ? 'rated' : ''}">
-                <div class="lesson-info">
-                    <div>
-                        <div class="lesson-title">${res.lessonTitle}</div>
-                        <div class="lesson-date">Trenér: ${res.trainer} | Datum: ${res.datum}</div>
+    function renderReservations() {
+        const pendingContainer = document.getElementById('pendingReservations');
+        const ratedContainer = document.getElementById('ratedReservations');
+
+        const pending = allReservations.filter(r => r.rating === null);
+        const rated = allReservations.filter(r => r.rating !== null);
+
+        if (pending.length === 0) {
+            pendingContainer.innerHTML = '<div class="no-reservations">Nemáte žádné lekce k hodnocení</div>';
+        } else {
+            pendingContainer.innerHTML = pending.map((res, index) => `
+                <div class="lesson-card">
+                    <div class="lesson-info">
+                        <div>
+                            <div class="lesson-title">${res.lessonTitle}</div>
+                            <div class="lesson-date">Trenér: ${res.trainer} | Datum: ${res.datum}</div>
+                        </div>
                     </div>
-                    ${isRated ? `<span class="rated-badge">Ohodnoceno: ${res.rating}★</span>` : ''}
-                </div>
-
-                ${!isRated ? `
                     <div class="rating-stars" id="stars-${index}">
                         ${[1,2,3,4,5].map(star =>
                 `<span class="star" data-index="${index}" data-rating="${star}" onclick="selectRating(${index}, ${star})">★</span>`
@@ -212,14 +236,38 @@
                     <textarea id="review-${index}" placeholder="Napište svou recenzi... (nepovinné)"></textarea>
                     <br><br>
                     <button class="btn" onclick="submitRating(${res.id}, ${index})">Odeslat hodnocení</button>
-                ` : `
-                    <div style="margin-top: 10px; color: #666;">
-                        ${res.review ? `<p><strong>Vaše recenze:</strong> ${res.review}</p>` : ''}
+                </div>
+            `).join('');
+        }
+
+
+        if (rated.length === 0) {
+            ratedContainer.innerHTML = '<div class="no-reservations">Zatím jste neohodnotili žádnou lekci</div>';
+        } else {
+            ratedContainer.innerHTML = rated.map(res => `
+                <div class="lesson-card rated">
+                    <div class="lesson-info">
+                        <div>
+                            <div class="lesson-title">${res.lessonTitle}</div>
+                            <div class="lesson-date">Trenér: ${res.trainer} | Datum: ${res.datum}</div>
+                        </div>
+                        <span class="rated-badge">✓ Ohodnoceno</span>
                     </div>
-                `}
-            </div>
-        `;
-        }).join('');
+                    <div class="rating-display">
+                        ${[1,2,3,4,5].map(star =>
+                `<span class="star display ${star <= res.rating ? 'active' : ''}">★</span>`
+            ).join('')}
+                        <span style="margin-left: 10px; font-weight: 600;">${res.rating}/5</span>
+                    </div>
+                    ${res.review ? `
+                        <div class="review-display">
+                            <strong>Vaše recenze:</strong>
+                            ${res.review}
+                        </div>
+                    ` : '<div style="margin-top: 10px; color: #999; font-style: italic;">Bez textové recenze</div>'}
+                </div>
+            `).join('');
+        }
     }
 
     let selectedRatings = {};
@@ -259,8 +307,15 @@
             const data = await res.json();
 
             if (data.success) {
-                showMessage('Hodnocení bylo uloženo!', 'success');
+                showMessage('Hodnocení bylo úspěšně uloženo do databáze!', 'success');
+                console.log('Hodnocení uloženo do DB:', {reservationId, rating, review});
+
                 await loadReservations();
+
+                // Switch to rated
+                setTimeout(() => {
+                    document.querySelectorAll('.tab')[1].click();
+                }, 1500);
             } else {
                 showMessage(data.error || 'Chyba při ukládání hodnocení', 'error');
             }

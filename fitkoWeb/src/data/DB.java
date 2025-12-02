@@ -222,7 +222,7 @@ public class DB {
             try (PreparedStatement ps = c.prepareStatement(
                     "INSERT INTO Lekce(id,title,trainer,day,time,capacity,loggedIn,price) VALUES(?,?,?,?,?,?,?,?)")) {
 
-                // TYP 1: CROSSFIT
+
                 ps.setInt(1, 1); ps.setString(2, "Crossfit"); ps.setString(3, "Petr Novák");
                 ps.setString(4, "Monday"); ps.setString(5, "10:00");
                 ps.setInt(6, 10); ps.setInt(7, 0); ps.setInt(8, 150); ps.executeUpdate();
@@ -235,7 +235,7 @@ public class DB {
                 ps.setString(4, "Friday"); ps.setString(5, "11:00");
                 ps.setInt(6, 12); ps.setInt(7, 0); ps.setInt(8, 150); ps.executeUpdate();
 
-                //TYP 2: PILATES
+
                 ps.setInt(1, 3); ps.setString(2, "Pilates"); ps.setString(3, "Jana Dvořáková");
                 ps.setString(4, "Tuesday"); ps.setString(5, "09:00");
                 ps.setInt(6, 15); ps.setInt(7, 0); ps.setInt(8, 120); ps.executeUpdate();
@@ -248,7 +248,7 @@ public class DB {
                 ps.setString(4, "Saturday"); ps.setString(5, "10:00");
                 ps.setInt(6, 15); ps.setInt(7, 0); ps.setInt(8, 120); ps.executeUpdate();
 
-                // TYP 3: KRUHOVÝ TRÉNINK
+
                 ps.setInt(1, 5); ps.setString(2, "Kruhový trénink"); ps.setString(3, "Tomáš Král");
                 ps.setString(4, "Wednesday"); ps.setString(5, "18:00");
                 ps.setInt(6, 12); ps.setInt(7, 0); ps.setInt(8, 100); ps.executeUpdate();
@@ -257,7 +257,7 @@ public class DB {
                 ps.setString(4, "Monday"); ps.setString(5, "19:00");
                 ps.setInt(6, 12); ps.setInt(7, 0); ps.setInt(8, 100); ps.executeUpdate();
 
-                // TYP 4: JÓGA
+
                 ps.setInt(1, 6); ps.setString(2, "Jóga"); ps.setString(3, "Lucie Benešová");
                 ps.setString(4, "Thursday"); ps.setString(5, "07:00");
                 ps.setInt(6, 20); ps.setInt(7, 0); ps.setInt(8, 80); ps.executeUpdate();
@@ -270,11 +270,10 @@ public class DB {
                 ps.setString(4, "Tuesday"); ps.setString(5, "18:30");
                 ps.setInt(6, 18); ps.setInt(7, 0); ps.setInt(8, 80); ps.executeUpdate();
 
-                // TYP 5: KICKBOX
+
                 ps.setInt(1, 7); ps.setString(2, "Kickbox"); ps.setString(3, "Martin Svoboda");
                 ps.setString(4, "Friday"); ps.setString(5, "19:00");
                 ps.setInt(6, 8); ps.setInt(7, 0); ps.setInt(8, 180); ps.executeUpdate();
-
 
                 ps.setInt(1, 13); ps.setString(2, "Kickbox"); ps.setString(3, "Jakub Bílý");
                 ps.setString(4, "Tuesday"); ps.setString(5, "20:00");
@@ -318,6 +317,7 @@ public class DB {
 
             try (PreparedStatement ps = c.prepareStatement(
                     "INSERT INTO Reservation(id,zakaznikId,lekceId,datum,stav,rating,review) VALUES(?,?,?,?,?,?,?)")) {
+
                 ps.setInt(1, 1);
                 ps.setInt(2, 1);
                 ps.setInt(3, 1);

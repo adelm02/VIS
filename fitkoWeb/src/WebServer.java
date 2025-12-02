@@ -34,6 +34,7 @@ public class WebServer {
         server.createContext("/api/reservations/rate", new RatingHandler());
         server.createContext("/api/customer", new CustomerHandler());
         server.createContext("/api/login", new LoginHandler());
+        server.createContext("/api/topup", new TopUpHandler());
         server.createContext("/", new StaticHandler());
         server.setExecutor(null);
         server.start();
@@ -98,9 +99,77 @@ public class WebServer {
         }
     }
 
-    // ========================================================================
-    // NOVÝ HANDLER - LOGIN
-    // ========================================================================
+//dobití kreditu
+    static class TopUpHandler implements HttpHandler {
+        @Override
+        public void handle(HttpExchange ex) throws IOException {
+            setCORS(ex);
+            if ("OPTIONS".equals(ex.getRequestMethod())) {
+                ex.sendResponseHeaders(200, -1);
+                return;
+            }
+
+            if (!"POST".equals(ex.getRequestMethod())) {
+                sendJSON(ex, 405, "{\"error\":\"Method not allowed\"}");
+                return;
+            }
+
+            try {
+                String body = readBody(ex);
+                Map<String, String> params = parseJSON(body);
+
+                int customerId = Integer.parseInt(params.get("customerId"));
+                int amount = Integer.parseInt(params.get("amount"));
+
+                if (amount <= 0) {
+                    sendJSON(ex, 400, "{\"error\":\"Částka musí být větší než 0\"}");
+                    return;
+                }
+
+                if (amount > 10000) {
+                    sendJSON(ex, 400, "{\"error\":\"Maximální částka je 10 000 Kč\"}");
+                    return;
+                }
+
+
+                PaymentGatewaySim paymentGateway = new PaymentGatewaySim();
+                boolean paymentApproved = paymentGateway.charge(customerId, amount, "Top-up kreditu");
+
+                if (!paymentApproved) {
+                    sendJSON(ex, 402, "{\"success\":false,\"error\":\"Platba byla zamítnuta\"}");
+                    return;
+                }
+
+                ZakaznikGateway gw = new ZakaznikGateway();
+                ZakaznikDto customer = gw.findById(customerId);
+
+                if (customer == null) {
+                    sendJSON(ex, 404, "{\"error\":\"Zákazník nenalezen\"}");
+                    return;
+                }
+
+                // Přičti kredit
+                customer.credit += amount;
+                gw.update(customer);
+
+                System.out.println("Top-up: Zákazník #" + customerId + " dobil " + amount + " Kč. Nový kredit: " + customer.credit + " Kč");
+
+                String json = String.format(
+                        "{\"success\":true,\"newCredits\":%d,\"message\":\"Kredit úspěšně dobit o %d Kč\"}",
+                        customer.credit, amount
+                );
+                sendJSON(ex, 200, json);
+
+            } catch (NumberFormatException e) {
+                sendJSON(ex, 400, "{\"error\":\"Neplatné číslo\"}");
+            } catch (Exception e) {
+                e.printStackTrace();
+                sendJSON(ex, 500, "{\"error\":\"" + esc(e.getMessage()) + "\"}");
+            }
+        }
+    }
+
+
     static class LoginHandler implements HttpHandler {
         @Override
         public void handle(HttpExchange ex) throws IOException {
@@ -127,19 +196,17 @@ public class WebServer {
                     return;
                 }
 
-                // Volání ZakaznikGateway.login() metody
                 ZakaznikGateway gw = new ZakaznikGateway();
                 ZakaznikDto user = gw.login(email, password);
 
                 if (user != null) {
-                    // Přihlášení úspěšné - vrátit uživatelská data
+                    // Přihlášení úspěšné
                     String json = String.format(
                             "{\"success\":true,\"user\":{\"id\":%d,\"name\":\"%s\",\"email\":\"%s\",\"credit\":%d}}",
                             user.id, esc(user.name), esc(user.email), user.credit
                     );
                     sendJSON(ex, 200, json);
                 } else {
-                    // Přihlášení neúspěšné
                     sendJSON(ex, 401, "{\"success\":false,\"error\":\"Nesprávný email nebo heslo\"}");
                 }
 
@@ -149,8 +216,6 @@ public class WebServer {
             }
         }
     }
-
-    // Ostatní handlery zůstávají stejné...
 
     static class LessonsHandler implements HttpHandler {
         @Override
